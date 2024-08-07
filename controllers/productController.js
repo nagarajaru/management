@@ -20,7 +20,7 @@ const productController={
     },
     getAllProducts:async(req,res)=>{
         try{
-            const products=await Product.find();
+            const products=await product.find();
             res.send({message:'All Products',products});
         }catch(error){
             res.send({message:error.message});
@@ -29,7 +29,7 @@ const productController={
     getProductById:async(req,res)=>{
         try{
             const productId=req.params.id;
-            const product=await Product.findById(productId);
+            const product=await product.findById(productId);
             if(!product){
                 return res.send({message:'Product does not exist'});
             }
@@ -42,7 +42,7 @@ const productController={
         try{
             const productId=req.params.id;
             const{name,description,price,image,category,stock}=req.body;
-            const updatedProduct=await Product.findByIdAndUpdate(productId,{
+            const updatedProduct=await product.findByIdAndUpdate(productId,{
                 name,
                 description,
                 price,
@@ -58,8 +58,8 @@ const productController={
         deleteProduct:async(req,res)=>{
             try{
                 const productId=req.params.id;
-               const deletedProduct= await Product.findByIdAndDelete(productId);
-               if(!deletedproduct)
+               const deletedProduct= await product.findByIdAndDelete(productId);
+               if(!deletedProduct)
                 return res.send({message:'product does not exist'});
                 res.send({message:'Product deleted successfully'});
             }catch(error){
