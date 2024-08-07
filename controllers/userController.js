@@ -56,7 +56,7 @@ const userController={
             if(!userId){
                 return res.send({message:'User not logged in'}); 
             }
-            res.clearcookie('Token');
+            res.clear.cookie('Token');
             res.send({message:'Logout successful'});
         }catch(error){
             res.send({message:error.message})
