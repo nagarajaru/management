@@ -7,7 +7,7 @@ const auth=require('../middleware/auth');
 //userRouter.get('/',userController.getdata);
 userRouter.post('/register',userController.register);
 userRouter.post('/login',userController.login);
-userRouter.get('/logout',userController.logout);
+userRouter.post('/logout',userController.logout);
 userRouter.get('/profile',auth.verifyToken,userController.getprofile);
 userRouter.put('/profile',auth.verifyToken,userController.updateprofile);
 userRouter.delete('/profile',auth.verifyToken,userController.deleteprofile);

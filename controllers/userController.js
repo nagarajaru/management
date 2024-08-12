@@ -41,22 +41,24 @@ const userController={
             const token=jwt.sign({id:user._id},JWT_SECRET);
             res.cookie('token',token,{
                 httpOnly:true,
-                sameSite:'none',
-                secure:true,
+                sameSite:true,
+                secure:false,
                 expires:new Date(new Date().getTime()+ 24 * 60 * 60 * 1000)
             });
-            res.send({message:'Login successful'});
+            res.send({message:'Login successful',user});
         }catch(error){
             res.send({message:error.message})
         }
     },
     logout:async (req,res)=>{
         try{
-            const userId=req.userId;
-            if(!userId){
-                return res.send({message:'User not logged in'}); 
-            }
-            res.clear.cookie('Token');
+            res.clearCookie("token", {
+                httpOnly: true,
+                sameSite: "none",
+                secure: false, // Secure should be true in production
+              });
+
+            
             res.send({message:'Logout successful'});
         }catch(error){
             res.send({message:error.message})

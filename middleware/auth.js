@@ -1,36 +1,44 @@
 
-const jwt=require('jsonwebtoken');
-const { JWT_SECRET } = require("../utils/config");
-const User=require('../models/user');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../utils/config');
+const User = require('../models/user');
+
+const auth = {
+    verifyToken: async (req, res, next) => {
+        try {
+            // get the token from the request cookies
+            const token = req.cookies.token;
+            console.log(token);
 
 
-const auth={
-    verifyToken:async(req,res,next)=>{
-        try{
-            const Token=req.cookies.token;
-            if(!Token){
-                return res.send({message:'Token not found'});
+            // if the token does not exist, return an error
+            if (!token) {
+                return res.status(401).send({ message: 'Access denied' });
             }
-            try{
-                const decoded=JWT.verify(token,JWT_SECRET);
-                req.userId=decoded.Id;
+
+            // verify the token
+                const decoded = jwt.verify(token, JWT_SECRET);
+                req.userId = decoded.id;
                 next();
-            }catch(error){
-                return res.send({message:'Invalid token'});
-            }
-        }catch(error){
-            res.send({message:error.message})
+            
+        } catch (error) {
+            res.status(500).send({ message: error.message });
         }
     },
     isAdmin: async (req, res, next) => {
         try {
+            // get the userId from the request object
             const userId = req.userId;
+
+            // find the user in the database
             const user = await User.findById(userId);
 
-         if (!user) {
+            // if the user is not found, return an error
+            if (!user) {
                 return res.send({ message: 'User not found' });
             }
 
+            // if the user is not an admin, return an error
             if (user.role !== 'admin') {
                 return res.send({ message: 'Unauthorized' });
             }
@@ -42,4 +50,4 @@ const auth={
     }
 }
 
-module.exports=auth;
+module.exports = auth;

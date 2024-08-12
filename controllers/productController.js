@@ -15,7 +15,7 @@ const productController={
             const savedProduct=await newProduct.save();
             res.send({message:'Product created successfully',product:savedProduct}); 
         }catch(error){
-            res.send({message:error.message});
+            res.json({message:error.message});
         }
     },
     getAllProducts:async(req,res)=>{
