@@ -67,7 +67,7 @@ const userController={
     getprofile:async(req,res)=>{
         try{
             const userId=req.userId;
-            const userProfile=await User.findbyid(userId);
+            const userProfile=await User.findById(userId);
             if(!userProfile){
                 return res.send({message:'user does not exist'});
             }
