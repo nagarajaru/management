@@ -11,7 +11,7 @@ const cartRouter=require('./routes/cartRoutes');
 const app=express();
 
 app.use(cors({
-    origin:'https://system01.netlify.app',
+    origin:'https://system02.netlify.app',
     credentials:true
 }));
 
