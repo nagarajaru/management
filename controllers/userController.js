@@ -48,6 +48,7 @@ const userController={
             res.send({message:'Login successful',user});
         }catch(error){
             res.send({message:error.message})
+            console.log(error);
         }
     },
     logout:async (req,res)=>{

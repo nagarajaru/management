@@ -3,7 +3,7 @@ const userRouter=require('./routes/userRoutes');
 const requestlogger=require('./utils/logger');
 const unknownendpoint=require('./utils/Error');
 const cors=require('cors');
-const cookieparser=require('cookie-parser');
+const cookieParser=require('cookie-parser');
 const productRouter=require('./routes/productRoutes');
 const orderRouter=require('./routes/orderRoutes');
 const cartRouter=require('./routes/cartRoutes');
@@ -11,11 +11,11 @@ const cartRouter=require('./routes/cartRoutes');
 const app=express();
 
 app.use(cors({
-    origin:'https://system02.netlify.app',
+    origin:['https://system02.netlify.app','http://localhost:5173'],
     credentials:true
 }));
 
-app.use(cookieparser());
+app.use(cookieParser());
 
 app.use(express.json());
 
