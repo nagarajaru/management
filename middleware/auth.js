@@ -7,7 +7,8 @@ const auth = {
     verifyToken: async (req, res, next) => {
         try {
             // get the token from the request cookies
-            const token = req.headers('Authorization');
+            const token = req.cookies.token;
+            console.log(token);
 
 
             // if the token does not exist, return an error
