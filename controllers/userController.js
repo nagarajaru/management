@@ -30,7 +30,7 @@ const userController={
     login:async(req,res)=>{
         try{
             const {email,password}=req.body;
-            const user=await User.findOne({email});
+             const user=await User.findOne({email});
             if(!user){
                 return res.send({message:'User does not exist'});
             }
@@ -41,8 +41,8 @@ const userController={
             const token=jwt.sign({id:user._id},JWT_SECRET);
             res.cookie('token',token,{
                 httpOnly:true,
-                sameSite:true,
-                secure:false,
+                sameSite:false,
+                secure:true,
                 expires:new Date(new Date().getTime()+ 24 * 60 * 60 * 1000)
             });
             res.send({message:'Login successful',user});
