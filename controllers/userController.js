@@ -41,7 +41,7 @@ const userController={
             const token=jwt.sign({id:user._id},JWT_SECRET);
             res.cookie('token',token,{
                 httpOnly:true,
-                sameSite:false,
+                sameSite:none,
                 secure:true,
                 expires:new Date(new Date().getTime()+ 24 * 60 * 60 * 1000)
             });
