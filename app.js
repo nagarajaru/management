@@ -14,6 +14,8 @@ app.use(cors({
     origin:'https://system02.netlify.app',
     credentials:true
 }));
+app.use('/uploads', express.static('uploads'));
+
 
 app.use(cookieParser());
 

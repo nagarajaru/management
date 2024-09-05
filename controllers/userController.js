@@ -1,116 +1,178 @@
 const User = require("../models/user");
-const bcrypt=require('bcrypt');
-const jwt=require('jsonwebtoken');
-const{JWT_SECRET}=require('../utils/config');
-const user = require("../models/user");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../utils/config');
 
-const userController={
-    //getdata:(req,res)=>{
-      //  res.send('Hello World!!');
-    //}
-    register:async(req,res)=>{
-        try{
-            const{name,email,password}=req.body;
-            const user=await User.findOne({email});
-            if(user){
-                return res.send({message:'user already exists'});
+const userController = {
+    // getData: (req, res) => {
+    //     res.send('Hello World!!');
+    // },
+    register: async (req, res) => {
+        try {
+            // get the user inputs from the request body
+            const { name, email, password } = req.body;
+
+            // check if the user already exists in the database
+            const user = await User.findOne({ email });
+
+            // if the user already exists, return an error
+            if (user) {
+                return res.status(400).send({ message: 'User already exists' });
             }
-            const hashedpassword=await bcrypt.hash(password,10);
 
-            const newUser=new User({name,email,password});
-            
-            const savedUser=await newUser.save();
-            
-            res.send({message:'user created successfully',user:savedUser});
+            // hash the password
+            const hashedPassword = await bcrypt.hash(password, 10);
 
-        }catch(error){
-            res.send({message:error.message});
+            // create a new user
+            const newUser = new User({ name, email, password: hashedPassword });
+
+            // save the user to the database
+            const savedUser = await newUser.save();
+
+            // return the saved user
+            res.status(201).send({ message: 'Registration successful' });
+        } catch (error) {
+            res.send({ message: error.message })
         }
     },
-    login:async(req,res)=>{
-        try{
-            const {email,password}=req.body;
-             const user=await User.findOne({email});
-            if(!user){
-                return res.send({message:'User does not exist'});
+    login: async (req, res) => {
+        try {
+            // get the user inputs from the request body
+            const { email, password } = req.body;
+
+            // check if the user exists in the database
+            const user = await User.findOne({ email });
+
+            // if the user does not exist, return an error
+            if (!user) {
+                return res.status(400).send({ message: 'User does not exist' });
             }
-            const isPasswordcorrect= bcrypt.compare(password,user.password);
-            if(!isPasswordcorrect){
-                return res.send({message:'Invalid credentials'})
+
+            // check if the password is correct
+            const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+            // if the password is incorrect, return an error
+            if (!isPasswordCorrect) {
+                return res.status(400).send({ message: 'Invalid password' });
             }
-            const token=jwt.sign({id:user._id},JWT_SECRET);
-            res.cookie('token',token,{
-                httpOnly:true,
-                sameSite:"None",
-                secure:true,
-                expires:new Date(new Date().getTime()+ 24 * 60 * 60 * 1000)
-            });
-            res.send({message:'Login successful',user});
-        }catch(error){
-            res.send({message:error.message})
-            console.log(error);
-        }
-    },
-    logout:async (req,res)=>{
-        try{
-            res.clearCookie("token", {
+
+            // create a token
+            const token = jwt.sign({ id: user._id }, JWT_SECRET);
+
+            //  set a cookie with the token
+            res.cookie('token', token, {
                 httpOnly: true,
-                sameSite: "none",
-                secure: false, // Secure should be true in production
-              });
+                sameSite: 'none',
+                secure: true,
+                expires: new Date(new Date().getTime() + 24 * 60 * 60 * 1000)  // 24 hours from now
+            });
 
-            
-            res.send({message:'Logout successful'});
-        }catch(error){
-            res.send({message:error.message})
+            // return the user
+            res.status(200).send({ message: 'Login successful', user: user });
+
+        } catch (error) {
+            res.send({ message: error.message })
         }
     },
-    getprofile:async(req,res)=>{
-        try{
-            const userId=req.userId;
-            const userProfile=await User.findById(userId);
-            if(!userProfile){
-                return res.send({message:'user does not exist'});
+
+    logout: async (req, res) => {
+        try {
+            const userId = req.userId;
+
+            if (!userId) {
+                return res.status(400).send({ message: 'User not authenticated' });
             }
-            res.send({message:'User Profile',user:userProfile});
-        }catch(error){
-            res.send({message:error.message})
+
+            // clear the cookie
+            res.clearCookie('token');
+
+            // return the user
+            res.status(200).send({ message: 'Logout successful' });
+
+        } catch (error) {
+            res.send({ message: error.message })
         }
     },
-    updateprofile:async(req,res)=>{
-        try{
-            const userId=req.userId;
-            const{name,email}=req.body;
-            const user=await User.findById(userId);
-            if(!user){
-                return res.send({message:'User does not exist'});
+
+    // get the user profile
+    getProfile: async (req, res) => {
+        try {
+            // get the user id from the request object
+            const userId = req.userId;
+
+            // find the user by id
+            const userProfile = await User.findById(userId);
+
+            // if the user does not exist, return an error
+            if (!userProfile) {
+                return res.status(400).send({ message: 'User does not exist' });
             }
-            user.name=name || user.name;
-            user.email=email || user.email;
-            const updatedUser=await user.save();
-            res.send({message:'User profile updated successfully',user:updatedUser});
-        }catch(error){
-            res.send({message:error.message})
+
+            // return the user profile
+            res.status(200).send({ message: 'User profile', user: userProfile });
+
+        } catch (error) {
+            res.send({ message: error.message })
         }
     },
-    deleteprofile:async(req,res)=>{
-        try{
-           const userId=req.userId;
-           const deletedUser=await User.findByIdAndDelete(userId);
-           if(!deletedUser){
-            return res.send({message:'user does not exist'});
-           }
-           res.send({message:'User deleted successfully',user:deletedUser});
-        }catch(error){
-            res.send({message:error.message})
+
+    updateProfile: async (req, res) => {
+        try {
+            // get the user id from the request object
+            const userId = req.userId;
+
+            // get the user inputs from the request body
+            const { name, email } = req.body;
+
+            // find the user by id
+            const user = await User.findById(userId);
+
+            // if the user does not exist, return an error
+            if (!user) {
+                return res.send({ message: 'User does not exist' });
+            }
+
+            // update the user profile
+            user.name = name || user.name;
+            user.email = email || user.email;
+
+            // save the user to the database
+            const updatedUser = await user.save();
+
+            // return the updated user profile
+            res.send({ message: 'User profile updated successfully', user: updatedUser });
+
+        } catch (error) {
+            res.send({ message: error.message })
+        }
+    },
+
+    deleteProfile: async (req, res) => {
+        try {
+            // get the user id from the request object
+            const userId = req.userId;
+
+            // find the user by id and delete
+            const deletedUser = await User.findByIdAndDelete(userId);
+
+            // if the user does not exist, return an error
+            if (!deletedUser) {
+                return res.send({ message: 'User does not exist' });
+            }
+
+            // return the deleted user
+            res.send({ message: 'User deleted successfully', user: deletedUser });
+
+        } catch (error) {
+            res.send({ message: error.message })
         }
     },
     getUsers: async (req, res) => {
         try {
-            
+            // find all users
             const users = await User.find();
 
-            
+            // return the users
             res.send({ message: 'All users', users });
 
         } catch (error) {
@@ -119,18 +181,18 @@ const userController={
     },
     getUser: async (req, res) => {
         try {
-            
+            // get the user id from the request parameters
             const userId = req.params.id;
 
-            
+            // find the user by id
             const user = await User.findById(userId);
 
-            
+            // if the user does not exist, return an error
             if (!user) {
                 return res.send({ message: 'User does not exist' });
             }
 
-        
+            // return the user
             res.send({ message: 'User', user });
 
         } catch (error) {
@@ -140,28 +202,28 @@ const userController={
 
     updateUser: async (req, res) => {
         try {
-            
+            // get the user id from the request parameters
             const userId = req.params.id;
 
-        
+            // get the user inputs from the request body
             const { name, email } = req.body;
 
-            
+            // find the user by id
             const user = await User.findById(userId);
 
-    
+            // if the user does not exist, return an error
             if (!user) {
                 return res.send({ message: 'User does not exist' });
             }
 
-    
+            // update the user profile
             user.name = name || user.name;
             user.email = email || user.email;
 
-    
+            // save the user to the database
             const updatedUser = await user.save();
 
-            
+            // return the updated user profile
             res.send({ message: 'User updated successfully', user: updatedUser });
 
         } catch (error) {
@@ -171,18 +233,18 @@ const userController={
 
     deleteUser: async (req, res) => {
         try {
-            
+            // get the user id from the request parameters
             const userId = req.params.id;
 
-
+            // find the user by id and delete
             const deletedUser = await User.findByIdAndDelete(userId);
 
-        
+            // if the user does not exist, return an error
             if (!deletedUser) {
                 return res.send({ message: 'User does not exist' });
             }
 
-            
+            // return the deleted user
             res.send({ message: 'User deleted successfully', user: deletedUser });
 
         } catch (error) {
@@ -191,15 +253,15 @@ const userController={
     },
     checkAuth: async (req, res) => {
         try {
-            
+            // get the token from the request cookies
             const token = req.cookies.token;
 
-            
+            // if the token does not exist, return an error
             if (!token) {
                 return res.status(401).send({ message: 'Access denied' });
             }
 
-        
+            // verify the token
             try {
                 const decoded = jwt.verify(token, JWT_SECRET);
                 return res.status(200).send({ message: 'Valid token' });
@@ -209,7 +271,7 @@ const userController={
         } catch (error) {
             res.status(500).send({ message: error.message });
         }
-    }
+    },
 }
 
-module.exports=userController;
+module.exports = userController;
