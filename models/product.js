@@ -7,7 +7,7 @@ const productSchema = new mongoose.Schema({
     price: Number,
     image: {
         type: String,
-        default: 'placeholder.jpg'
+        default: 'placeholder.jpg'  
     },
     category: String,
     stock: Number,
